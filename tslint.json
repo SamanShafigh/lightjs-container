@@ -1,0 +1,14 @@
+{
+  "extends": [
+    "tslint:latest"
+  ],
+  "rules": {
+    "object-literal-sort-keys": false,
+    "interface-name": false,
+    "quotemark": [
+      true,
+      "single",
+      "jsx-double"
+    ]
+  }
+}

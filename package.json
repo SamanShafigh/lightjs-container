@@ -1,0 +1,56 @@
+{
+  "name": "lightjs-container",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "pretest": "tslint -c tslint.json src/**/*.{ts,tsx}",
+    "test": "jest --config=jest.config.js",
+    "build": "tsc",
+    "start": "node ./dist/index.js",
+    "dev:watch": "nodemon --watch 'src/**/*' -e ts,tsx --exec 'ts-node' ./src/index.ts",
+    "dev:watch:demo": "nodemon --watch 'demo/**/*' -e ts,tsx --exec 'ts-node' ./demo/index.ts",
+    "dev:watch:build": "tsc --watch",
+    "dev:test": "jest --bail --watch --config=jest.config.js",
+    "validate": "npm-run-all --parallel pretest test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SamanShafigh/lightjs-container"
+  },
+  "keywords": [
+    "DI",
+    "container"
+  ],
+  "author": "Saman Shafigh <saman.shafigh@gmail.com>",
+  "license": "MIT",
+  "homepage": "https://github.com/SamanShafigh/lightjs-container#readme",
+  "devDependencies": {
+    "@types/jest": "23.3.1",
+    "@types/node": "10.5.3",
+    "eslint": "4.19.1",
+    "eslint-config-airbnb-base": "13.0.0",
+    "eslint-config-prettier": "3.1.0",
+    "eslint-plugin-import": "2.13.0",
+    "eslint-plugin-prettier": "3.0.0",
+    "eslint-plugin-typescript": "0.12.0",
+    "ghooks": "2.0.4",
+    "jest": "23.4.1",
+    "nodemon": "1.18.3",
+    "npm-run-all": "4.1.5",
+    "pre-commit": "1.2.2",
+    "ts-jest": "23.0.1",
+    "ts-loader": "^5.2.2",
+    "ts-node": "7.0.0",
+    "tslint": "5.12.1",
+    "typescript": "2.9.2",
+    "typescript-eslint-parser": "17.0.1",
+    "webpack": "^4.23.1",
+    "webpack-node-externals": "^1.7.2"
+  },
+  "config": {
+    "ghooks": {
+      "pre-commit": "npm run validate"
+    }
+  }
+}

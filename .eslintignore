@@ -1,0 +1,7 @@
+coverage/
+node_modules/
+dist/
+*.test.ts
+*.snap
+*.mock.js
+*.mock.html
