@@ -1,40 +1,101 @@
-# API integration
+# lightjs-container
 
-How to run it
+lightjs-container is a light and simple javascript service Container. This library helps you to build a container and resolve dependency injections.
 
+Imagine you have the following 3 services. Note that in order to build a new Printer service you have to build a driver and inject to printer as DI.
 
-Use serverless to run it
-```
-serverless invoke local -f api_integration_transformer -p event/transformer.event.json
-```
+```js
+class Printer {
+  private driver: Driver;
+  private lcd: 'ready' | 'printing';
 
-or 
+  constructor(driver: Driver) {
+    this.driver = driver;
+    this.lcd = 'ready';
+  }
 
-```
-serverless invoke local -f api_integration_transformer -p event/transformer.event.json --watch
-```
-to automatically execute lambda on code change.
+  public async print(text: string) {
+    this.lcd = 'printing';
+    const imaginaryPaper = await this.driver.print(text, 'an imaginary paper');
+    this.lcd = 'ready';
 
-
-Webpack will automatically compile when running commands like
-```serverless package```
-or
-```serverless deploy```
-
-Simple local end-to-end test
-```
-ETL_STAGE=dev ETL_DEV_DB_HOST=192.168.99.100 ETL_DEV_DB_USER=root ETL_DEV_DB_PASSWORD=xxx npm run dev:watch
+    return imaginaryPaper;
+  }
+}
 ```
 
-Production end-to-end test
+```js
+class BwDriver implements Driver {
+  public print(text: string, paper: string): Promise<string> {
+    // Print something as a driver only
+    return Promise.resolve(`Print ${text} with B&W ink on ${paper}`);
+  }
+}
 ```
-ETL_JOB_QUEUE_URL=xxx ETL_QUERYER_ARN=xxx npm run dev:watch
+
+```js
+class ColorDriver implements Driver {
+  public print(text: string, paper: string): Promise<string> {
+    // Print something as a driver only
+    return Promise.resolve(`Print ${text} with color ink on ${paper}`);
+  }
+}
 ```
 
+Now you can define your services and their DI in a following format. You can save these in a file for example called services.ts
 
-## Testing
+```js
+import BwDriver from './lib/BwDriver';
+import ColorDriver from './lib/ColorDriver';
+import Printer from './lib/Printer';
 
-We used JEST also for backend testing. And why jest? 
-- We also use it for front-end testing 
-- It is faster https://medium.com/airbnb-engineering/unlocking-test-performance-migrating-from-mocha-to-jest-2796c508ec50
-- https://codeburst.io/revisiting-node-js-testing-part-1-84c33bb4d711
+export const bwPrinter = {
+  constructor: (c: Container) => new Printer(new BwDriver()),
+};
+
+export const colorPrinter = {
+  constructor: (c: Container) => new Printer(new ColorDriver()),
+};
+```
+
+Now in your app you can build a Container with these service definitions (we call them service signatures)
+
+```js
+// Build a container (a service initialiser/locator) with my service signatures
+const container = new Container(builders);
+
+// Cull any service you like
+container.get('bwPrinter')
+  .print('Hello & bonjour')
+  .then((result: string) => console.log(result));
+
+// Cull any service you like
+container.get('colorPrinter')
+  .print('Hello & bonjour')
+  .then((result: string) => console.log(result));
+```
+
+As you can see you have access to Container so you can build the chain of DI, For example imagine you have service C that depends on B and B also depends on A. So you can do it easily like this.
+
+```js
+import A from './lib/A';
+import B from './lib/B';
+import C from './lib/C';
+
+export const a = {
+  constructor: (c: Container) => new A(),
+};
+
+export const b = {
+  constructor: (c: Container) => new B(c.get('a')),
+};
+
+export const c = {
+  constructor: (c: Container) => new C(c.get('b')),
+};
+```
+When later you want to access the service C for the first time, we will take care of instantiating the chain of dependencies in order to build a singleton instance of service C. 
+
+```js
+container.get('c').doThis('Do something');
+```
